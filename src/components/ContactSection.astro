@@ -1,0 +1,80 @@
+---
+import { Mail, MapPin, Phone, Calendar, Clock, ExternalLink, Hash } from "@lucide/astro";
+import type { ContactField } from "../lib/content";
+
+interface Props {
+  cardTitle: string;
+  fields: ContactField[];
+}
+
+const { cardTitle, fields } = Astro.props;
+
+function iconFor(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("email")) return Mail;
+  if (l.includes("address")) return MapPin;
+  if (l.includes("phone")) return Phone;
+  if (l.includes("date")) return Calendar;
+  if (l.includes("details")) return Clock;
+  if (l.includes("instagram") || l.includes("website")) return ExternalLink;
+  return Hash;
+}
+---
+
+<section class="border-t border-border bg-surface/40 py-20 sm:py-28" id="contact">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <h2
+      class="mb-10 text-center font-display text-4xl font-bold text-foreground sm:text-5xl lg:text-6xl"
+      data-reveal
+    >
+      Contact us
+    </h2>
+
+    <div class="glass glass-glow overflow-hidden rounded-3xl" data-reveal>
+      <div class="flex items-center gap-3 border-b border-white/10 bg-white/[0.02] px-5 py-3.5">
+        <span class="relative flex h-2 w-2 shrink-0 rounded-full bg-primary motion-safe:animate-pulse-glow" aria-hidden="true"></span>
+        <span class="font-mono text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">{cardTitle}</span>
+        <span class="ml-auto flex items-end gap-0.5" aria-hidden="true">
+          <span class="h-1.5 w-0.5 rounded-full bg-primary/40"></span>
+          <span class="h-2.5 w-0.5 rounded-full bg-primary/65"></span>
+          <span class="h-3.5 w-0.5 rounded-full bg-primary"></span>
+        </span>
+      </div>
+
+      <dl class="grid grid-cols-1 gap-x-8 gap-y-1 p-6 sm:grid-cols-2 sm:p-8">
+        {
+          fields.map((field) => {
+            const Icon = iconFor(field.label);
+            const content = (
+              <span class="font-mono text-sm text-foreground">{field.value}</span>
+            );
+            return (
+              <div class="flex items-start gap-3 border-b border-border/60 py-3 last:border-0 sm:border-0">
+                <Icon class="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <div class="min-w-0">
+                  <dt class="font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+                    {field.label}
+                  </dt>
+                  <dd class="mt-0.5 break-words">
+                    {field.href ? (
+                      <a
+                        href={field.href}
+                        class="underline decoration-primary/40 underline-offset-4 transition-colors hover:text-primary"
+                        target={field.href.startsWith("http") ? "_blank" : undefined}
+                        rel={field.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      content
+                    )}
+                  </dd>
+                </div>
+              </div>
+            );
+          })
+        }
+      </dl>
+    </div>
+  </div>
+</section>

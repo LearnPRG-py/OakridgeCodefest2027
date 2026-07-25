@@ -1,0 +1,45 @@
+---
+import { ArrowRight } from "@lucide/astro";
+
+interface Props {
+  href: string;
+  variant?: "primary" | "secondary" | "ghost";
+  showArrow?: boolean;
+  magnetic?: boolean;
+  class?: string;
+  external?: boolean;
+}
+
+const {
+  href,
+  variant = "primary",
+  showArrow = true,
+  magnetic = true,
+  class: className = "",
+  external = false,
+} = Astro.props;
+
+const base =
+  "group relative inline-flex items-center gap-2 rounded-full px-6 py-3 font-mono text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4";
+
+const variants = {
+  primary: "bg-primary text-on-primary hover:bg-primary/90 shadow-glow",
+  secondary: "border border-primary/50 text-primary hover:bg-primary/10",
+  ghost: "text-foreground hover:text-primary",
+};
+---
+
+<a
+  href={href}
+  class:list={[base, variants[variant], className]}
+  data-magnetic={magnetic ? "12" : undefined}
+  target={external ? "_blank" : undefined}
+  rel={external ? "noopener noreferrer" : undefined}
+>
+  <slot />
+  {
+    showArrow && (
+      <ArrowRight class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
+    )
+  }
+</a>

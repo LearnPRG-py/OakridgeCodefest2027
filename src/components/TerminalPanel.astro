@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  paragraphs: string[];
+}
+
+const { title, paragraphs } = Astro.props;
+---
+
+<div class="glass glass-glow mx-auto max-w-3xl overflow-hidden rounded-3xl" data-reveal>
+  <div class="flex items-center gap-3 border-b border-white/10 bg-white/[0.02] px-5 py-3.5">
+    <span class="relative flex h-2 w-2 shrink-0 rounded-full bg-primary motion-safe:animate-pulse-glow" aria-hidden="true"></span>
+    <span class="font-mono text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">{title}</span>
+    <span class="ml-auto flex items-end gap-0.5" aria-hidden="true">
+      <span class="h-1.5 w-0.5 rounded-full bg-primary/40"></span>
+      <span class="h-2.5 w-0.5 rounded-full bg-primary/65"></span>
+      <span class="h-3.5 w-0.5 rounded-full bg-primary"></span>
+    </span>
+  </div>
+  <div class="space-y-4 p-6 font-mono text-sm leading-relaxed text-foreground/90 sm:p-8 sm:text-base">
+    {paragraphs.map((p) => <p>{p}</p>)}
+  </div>
+</div>

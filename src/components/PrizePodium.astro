@@ -1,0 +1,68 @@
+---
+import { Trophy } from "@lucide/astro";
+
+interface PodiumEntry {
+  rank: string;
+  amount: string;
+  tier: "gold" | "silver" | "bronze";
+}
+
+interface Props {
+  name: string;
+  podium: readonly PodiumEntry[];
+}
+
+const { name, podium } = Astro.props;
+
+const tierStyles: Record<
+  PodiumEntry["tier"],
+  { border: string; text: string; height: string; glow: string; numeral: string }
+> = {
+  gold: { border: "border-gold/50", text: "text-gold", height: "h-56 sm:h-64", glow: "glass-gold", numeral: "1" },
+  silver: { border: "border-silver/40", text: "text-silver", height: "h-36 sm:h-40", glow: "", numeral: "2" },
+  bronze: { border: "border-bronze/40", text: "text-bronze", height: "h-28 sm:h-32", glow: "", numeral: "3" },
+};
+
+// Podium order
+const order = ["silver", "gold", "bronze"] as const;
+const sorted = order
+  .map((tier) => podium.find((p) => p.tier === tier))
+  .filter((p): p is PodiumEntry => Boolean(p));
+---
+
+<div class="glass rounded-3xl p-6 sm:p-8" data-reveal>
+  <h3 class="mb-8 text-center font-display text-2xl font-bold text-foreground sm:text-3xl">{name}</h3>
+  <div class="flex items-end justify-center gap-3 sm:gap-4" data-podium-group>
+    {
+      sorted.map((entry) => {
+        const style = tierStyles[entry.tier];
+        return (
+          <div
+            data-podium-block
+            style="transform-origin: bottom;"
+            class:list={[
+              "relative flex flex-1 flex-col items-center justify-end gap-2 overflow-hidden rounded-t-2xl border bg-background/60 px-3 pb-5 pt-6 text-center",
+              style.border,
+              style.height,
+              style.glow,
+            ]}
+          >
+            <span
+              class:list={[
+                "pointer-events-none absolute -bottom-4 left-1/2 -translate-x-1/2 select-none font-display text-[6rem] font-bold leading-none sm:text-[7.5rem]",
+                style.text,
+              ]}
+              style="opacity: 0.1;"
+              aria-hidden="true"
+            >
+              {style.numeral}
+            </span>
+            <Trophy class:list={["relative h-6 w-6", style.text]} aria-hidden="true" />
+            <span class="relative font-mono text-xs uppercase tracking-wider text-muted-foreground">{entry.rank}</span>
+            <span class:list={["relative font-display text-lg font-bold sm:text-xl", style.text]}>{entry.amount}</span>
+          </div>
+        );
+      })
+    }
+  </div>
+</div>

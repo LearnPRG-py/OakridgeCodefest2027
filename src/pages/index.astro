@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import Countdown from "../components/Countdown.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import PrizePodium from "../components/PrizePodium.astro";
+import ContactSection from "../components/ContactSection.astro";
+import { site, homeAbout, awards, homeContactFields } from "../lib/content";
+---
+
+<BaseLayout
+  title="Oakridge Codefest 2027 | Home"
+  description="Oakridge Codefest 2027 (v10): India's biggest overnight high-school hackathon. 5th–6th February 2027 at Oakridge International School, Bengaluru."
+>
+  <!-- Depth engine -->
+  <div id="depth-engine-root" class="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+    <canvas id="ocean-canvas" class="absolute inset-0 h-full w-full"></canvas>
+    <canvas id="scene-canvas" class="absolute inset-0 h-full w-full"></canvas>
+  </div>
+
+  <!-- Hero -->
+  <section id="home-hero" class="relative isolate flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 pt-32 pb-20 text-center sm:px-6">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-grid-circuit [mask-image:radial-gradient(ellipse_60%_60%_at_50%_30%,black,transparent)]"></div>
+    <div
+      class="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[80vmin] w-[80vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
+      aria-hidden="true"
+    >
+    </div>
+    <p class="mb-6 font-mono text-xs uppercase tracking-[0.4em] text-primary sm:text-sm" data-reveal-hero>
+      {site.eventDateLabel}
+    </p>
+
+    <h1
+      class="text-balance font-display text-6xl font-bold leading-[0.95] tracking-tight text-foreground sm:text-8xl xl:text-9xl"
+      data-reveal-hero
+    >
+      The <span class="text-primary">LARGEST</span><br />overnight hackathon<br />in India
+    </h1>
+
+    <p class="mt-8 max-w-xl text-balance text-lg text-muted-foreground sm:text-xl" data-reveal-hero>
+      {site.tagline}
+    </p>
+
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-4" data-reveal-hero>
+      <Button href="/coming-soon" variant="primary">Register your team</Button>
+      <Button href="/about" variant="secondary" showArrow={false}>About Codefest</Button>
+    </div>
+
+    <div class="mt-16" data-reveal-hero>
+      <p class="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Begins In</p>
+      <Countdown targetISO={site.countdownTargetISO} label={`Countdown to Oakridge Codefest 2027, ${site.eventDateLabel}`} />
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="relative border-t border-border py-20 sm:py-28">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-background/50"></div>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="glass glass-glow grid grid-cols-1 gap-10 rounded-3xl p-6 sm:p-10 lg:grid-cols-5 lg:gap-12 lg:p-12">
+        <img
+          src="/brand/weareback.jpeg"
+          alt=""
+          class="aspect-[20/9] w-full rounded-2xl border border-border bg-black object-contain lg:order-last lg:col-span-2 lg:self-center"
+          data-reveal
+        />
+        <div class="lg:col-span-3">
+          <SectionHeading eyebrow="About" title={homeAbout.heading} class="mb-6" />
+          <div class="space-y-4 text-base leading-relaxed text-foreground/85 sm:text-lg" data-reveal>
+            {homeAbout.paragraphs.map((p) => <p>{p}</p>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Awards -->
+  <section id="awards-chamber" class="relative overflow-hidden border-t border-border py-24 sm:py-32">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-background/60"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 flex h-full justify-center gap-[8vw]" aria-hidden="true">
+      <div class="light-shaft h-full w-[22vw] motion-safe:animate-drift"></div>
+      <div class="light-shaft h-full w-[16vw] motion-safe:animate-drift [animation-delay:1.2s]"></div>
+      <div class="light-shaft h-full w-[22vw] motion-safe:animate-drift [animation-delay:2.4s]"></div>
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <SectionHeading
+        eyebrow="Awards"
+        title={awards.heading}
+        description={awards.subheading}
+        align="center"
+        class="mb-4"
+      />
+      <p
+        class="text-shimmer mb-14 text-center font-display text-3xl font-bold sm:text-4xl"
+        data-reveal
+      >
+        {awards.prizeHeadline}
+      </p>
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {awards.categories.map((cat) => <PrizePodium name={cat.name} podium={cat.podium} />)}
+      </div>
+    </div>
+  </section>
+
+  <ContactSection cardTitle="Codefest27.contact" fields={homeContactFields} />
+
+  <script src="../three/homeDepth.ts"></script>
+  <script src="../scripts/splash.ts"></script>
+</BaseLayout>

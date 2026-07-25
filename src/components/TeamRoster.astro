@@ -1,0 +1,393 @@
+---
+import HudCorners from "./HudCorners.astro";
+import type { TeamMember, Department, DepartmentKey } from "../lib/content";
+
+interface Props {
+  heading: string;
+  noteTitle: string;
+  noteText: string;
+  coreTeam: {
+    title: string;
+    description: string;
+  };
+  leadership: TeamMember[];
+  departments: Department[];
+}
+
+const { heading, noteTitle, noteText, coreTeam, leadership, departments } = Astro.props;
+
+// Department accents
+const DEPT_META: Record<
+  DepartmentKey,
+  { text: string; ring: string; dot: string; badge: string; shadow: string }
+> = {
+  technology: {
+    text: "text-dept-tech",
+    ring: "ring-dept-tech/35",
+    dot: "bg-dept-tech",
+    badge: "bg-dept-tech",
+    shadow: "hover:shadow-[0_30px_70px_-20px_rgba(34,211,238,0.45)]",
+  },
+  logistics: {
+    text: "text-dept-logistics",
+    ring: "ring-dept-logistics/35",
+    dot: "bg-dept-logistics",
+    badge: "bg-dept-logistics",
+    shadow: "hover:shadow-[0_30px_70px_-20px_rgba(59,130,246,0.45)]",
+  },
+  finance: {
+    text: "text-dept-finance",
+    ring: "ring-dept-finance/35",
+    dot: "bg-dept-finance",
+    badge: "bg-dept-finance",
+    shadow: "hover:shadow-[0_30px_70px_-20px_rgba(16,185,129,0.45)]",
+  },
+  marketing: {
+    text: "text-dept-marketing",
+    ring: "ring-dept-marketing/35",
+    dot: "bg-dept-marketing",
+    badge: "bg-dept-marketing",
+    shadow: "hover:shadow-[0_30px_70px_-20px_rgba(192,38,211,0.45)]",
+  },
+};
+---
+
+
+<div class="relative" data-command-center>
+  <HudCorners inset="inset-0" />
+
+  <!-- Background blooms -->
+  <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+    <div class="absolute left-[8%] top-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl motion-safe:animate-drift"></div>
+    <div
+      class="absolute right-[12%] top-1/3 h-72 w-72 rounded-full bg-dept-tech/10 blur-3xl motion-safe:animate-drift"
+      style="animation-delay: -3s;"
+    >
+    </div>
+    <div
+      class="absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-dept-finance/10 blur-3xl motion-safe:animate-drift"
+      style="animation-delay: -5s;"
+    >
+    </div>
+  </div>
+
+  <!-- Intro -->
+  <div class="relative mx-auto mb-16 flex max-w-2xl flex-col items-center px-4 text-center sm:mb-20">
+    <div class="relative mb-6 flex h-16 w-16 items-center justify-center opacity-0" data-command-scanner>
+      <div
+        class="absolute inset-0 rounded-full border border-primary/25 motion-safe:animate-[spin_9s_linear_infinite]"
+        style="background: conic-gradient(from 0deg, transparent 0%, rgba(46,230,214,0.4) 12%, transparent 24%);"
+        aria-hidden="true"
+      >
+      </div>
+      <div
+        class="absolute inset-2 rounded-full border border-primary/30 motion-safe:animate-[spin_6s_linear_infinite_reverse]"
+        aria-hidden="true"
+      >
+      </div>
+      <span class="relative h-2 w-2 rounded-full bg-primary shadow-glow motion-safe:animate-pulse-glow" aria-hidden="true"></span>
+    </div>
+
+    <p class="font-mono text-xs uppercase tracking-[0.4em] text-primary opacity-0 translate-y-4" data-command-reveal>Command Center</p>
+    <h2
+      class="mt-3 text-balance font-display text-4xl font-bold leading-[1.05] text-foreground opacity-0 translate-y-4 sm:text-5xl lg:text-6xl"
+      data-command-reveal
+    >
+      {heading}
+    </h2>
+
+    <div class="glass glass-glow mt-8 w-full overflow-hidden rounded-2xl text-left opacity-0 translate-y-4" data-command-reveal>
+      <div class="flex items-center gap-3 border-b border-white/10 bg-white/[0.02] px-5 py-3.5">
+        <span class="relative flex h-2 w-2 shrink-0 rounded-full bg-primary motion-safe:animate-pulse-glow" aria-hidden="true"></span>
+        <span class="font-mono text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">{noteTitle}</span>
+        <span class="ml-auto flex items-end gap-0.5" aria-hidden="true">
+          <span class="h-1.5 w-0.5 rounded-full bg-primary/40"></span>
+          <span class="h-2.5 w-0.5 rounded-full bg-primary/65"></span>
+          <span class="h-3.5 w-0.5 rounded-full bg-primary"></span>
+        </span>
+      </div>
+      <p class="px-5 py-4 text-sm leading-relaxed text-muted-foreground sm:px-6 sm:text-base">{noteText}</p>
+    </div>
+  </div>
+
+  <!-- Core team -->
+  <div class="mx-auto mb-8 max-w-3xl px-4 sm:px-6">
+    <div class="mb-6 flex items-center gap-4">
+      <div class="min-w-0">
+        <p class="font-mono text-xs uppercase tracking-[0.35em] text-primary">{coreTeam.title}</p>
+        <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{coreTeam.description}</p>
+      </div>
+      <span
+        data-dept-line
+        class="ml-auto hidden h-px flex-1 origin-left scale-x-0 bg-primary"
+        aria-hidden="true"
+      />
+    </div>
+  </div>
+
+  <div class="mx-auto mb-20 grid max-w-xs grid-cols-1 gap-5 px-4 sm:max-w-3xl sm:grid-cols-2 sm:px-6 lg:gap-6" data-oc-grid>
+    {
+      leadership.map((member, i) => (
+        <div class="perspective-[1200px]">
+          <div
+            data-team-card
+            data-tilt-intensity="strong"
+            data-magnetic="6"
+            class="glass glass-glow group relative aspect-4/5 transform-3d overflow-hidden rounded-2xl ring-1 ring-primary/30 transition-shadow duration-300 will-change-transform hover:shadow-[0_32px_72px_-22px_rgba(46,230,214,0.45)]"
+          >
+            <img
+              src={member.image}
+              alt={member.name}
+              data-tilt-photo
+              class="absolute inset-0 h-full w-full object-cover object-top"
+              loading="lazy"
+            />
+
+            <div class="pointer-events-none absolute inset-0 mix-blend-screen opacity-70" aria-hidden="true">
+              <div class="absolute -left-6 top-0 h-32 w-32 rounded-full bg-primary/25 blur-2xl motion-safe:animate-drift" />
+              <div
+                class="absolute -right-8 bottom-1/4 h-40 w-40 rounded-full bg-white/10 blur-2xl motion-safe:animate-drift"
+                style="animation-delay: -3.5s;"
+              />
+            </div>
+
+            <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/95 via-black/15 to-transparent" />
+            <div
+              data-team-glare
+              class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300"
+              style="background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.45), transparent 55%); mix-blend-mode: overlay;"
+            />
+            <div
+              class="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-primary/40 motion-safe:animate-pulse-glow"
+              aria-hidden="true"
+            />
+
+            <span class="absolute left-4 top-4 transform-[translateZ(40px)] font-mono text-xs font-bold tracking-widest text-primary/90">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+
+            <div class="absolute inset-x-0 bottom-0 transform-[translateZ(30px)] p-4 text-center sm:p-5">
+              <p data-reveal-name class="text-balance font-display text-lg font-bold text-white opacity-0 sm:text-xl">
+                {member.name}
+              </p>
+              <p data-reveal-role class="mt-1.5 font-mono text-xs uppercase tracking-widest text-primary opacity-0">
+                {member.role}
+              </p>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- Departments -->
+  <div class="space-y-16 px-4 sm:px-6 lg:space-y-20">
+    {
+      departments.map((dept) => {
+        const meta = DEPT_META[dept.key];
+        return (
+          <div>
+            <div class="mb-8 flex items-center gap-4">
+              <div class="min-w-0">
+                <p class:list={["font-mono text-xs uppercase tracking-[0.35em]", meta.text]}>{dept.title}</p>
+                {dept.description && (
+                  <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{dept.description}</p>
+                )}
+              </div>
+              <span
+                data-dept-line
+                class:list={["ml-auto hidden h-px flex-1 origin-left scale-x-0", meta.dot]}
+                aria-hidden="true"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6" data-reveal-group>
+              {dept.members.map((member) => {
+                const isHead = member.role.startsWith("Head");
+                return (
+                  <div class="perspective-[1000px]">
+                    <div
+                      data-team-card
+                      data-tilt-intensity="subtle"
+                      data-magnetic="8"
+                      class:list={[
+                        "glass glass-glow group relative aspect-3/4 transform-3d overflow-hidden rounded-2xl ring-1 transition-shadow duration-300 will-change-transform",
+                        meta.ring,
+                        meta.shadow,
+                      ]}
+                    >
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        data-tilt-photo
+                        class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                        loading="lazy"
+                      />
+                      <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/90 via-black/10 to-transparent" />
+                      <div
+                        data-team-glare
+                        class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300"
+                        style="background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.4), transparent 55%); mix-blend-mode: overlay;"
+                      />
+
+                      {isHead && (
+                        <span
+                          class:list={[
+                            "absolute right-2.5 top-2.5 transform-[translateZ(40px)] rounded-full px-2 py-0.5 font-mono text-[0.55rem] font-bold uppercase tracking-widest text-on-primary shadow-glow",
+                            meta.badge,
+                          ]}
+                        >
+                          Head
+                        </span>
+                      )}
+
+                      <div class="absolute inset-x-0 bottom-0 transform-[translateZ(30px)] p-3 text-center sm:p-4">
+                        <p class="text-balance font-display text-sm font-bold leading-tight text-white sm:text-base">
+                          {member.name}
+                        </p>
+                        <p class:list={["mt-1 font-mono text-[0.6rem] uppercase tracking-widest", meta.text]}>{member.role}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+</div>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  // Card tilt
+  const INTENSITY = {
+    strong: { maxTilt: 14, scale: 1.04, parallax: 14 },
+    subtle: { maxTilt: 9, scale: 1.03, parallax: 8 },
+  } as const;
+
+  function bindTiltCard(card: HTMLElement) {
+    if (card.dataset.tiltBound) return;
+    card.dataset.tiltBound = "true";
+
+    const level = card.dataset.tiltIntensity === "strong" ? INTENSITY.strong : INTENSITY.subtle;
+    const glare = card.querySelector<HTMLElement>("[data-team-glare]");
+    const photo = card.querySelector<HTMLElement>("[data-tilt-photo]");
+
+    gsap.set(card, { transformPerspective: 800 });
+
+    card.addEventListener("pointermove", (e: PointerEvent) => {
+      const rect = card.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width;
+      const relY = (e.clientY - rect.top) / rect.height;
+
+      gsap.to(card, {
+        rotateY: (relX - 0.5) * level.maxTilt * 2,
+        rotateX: (0.5 - relY) * level.maxTilt * 2,
+        scale: level.scale,
+        duration: 0.5,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+
+      if (photo) {
+        gsap.to(photo, {
+          x: (relX - 0.5) * -level.parallax,
+          y: (relY - 0.5) * -level.parallax,
+          duration: 0.5,
+          ease: "power3.out",
+          overwrite: "auto",
+        });
+      }
+
+      if (glare) {
+        glare.style.setProperty("--mx", `${relX * 100}%`);
+        glare.style.setProperty("--my", `${relY * 100}%`);
+        glare.style.opacity = "1";
+      }
+    });
+
+    card.addEventListener("pointerleave", () => {
+      gsap.to(card, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.6, ease: "power3.out", overwrite: "auto" });
+      if (photo) gsap.to(photo, { x: 0, y: 0, duration: 0.6, ease: "power3.out", overwrite: "auto" });
+      if (glare) glare.style.opacity = "0";
+    });
+  }
+
+  function initTeamTilt() {
+    if (prefersReducedMotion()) return;
+    document.querySelectorAll<HTMLElement>("[data-team-card]").forEach(bindTiltCard);
+  }
+
+  // Scroll reveals
+  function initCommandCenterReveal() {
+    const root = document.querySelector<HTMLElement>("[data-command-center]");
+    if (!root) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set("[data-command-scanner], [data-command-reveal], [data-reveal-name], [data-reveal-role]", {
+        opacity: 1,
+      });
+      gsap.set("[data-dept-line]", { scaleX: 1 });
+      return;
+    }
+
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: root, start: "top 80%" },
+    });
+    tl.to("[data-command-scanner]", { opacity: 1, duration: 0.5, ease: "power2.out" })
+      .to("[data-command-reveal]", { opacity: 1, y: 0, duration: 0.6, stagger: 0.12, ease: "power2.out" }, "-=0.15");
+
+    const ocCards = root.querySelectorAll<HTMLElement>("[data-oc-grid] [data-team-card]");
+    gsap.set(ocCards, { opacity: 0, y: 30, rotateX: -12, filter: "brightness(0.3)" });
+    gsap.to(ocCards, {
+      opacity: 1,
+      y: 0,
+      rotateX: 0,
+      filter: "brightness(1)",
+      duration: 0.9,
+      stagger: 0.12,
+      ease: "power3.out",
+      scrollTrigger: { trigger: "[data-oc-grid]", start: "top 82%" },
+    });
+
+    ocCards.forEach((card) => {
+      const name = card.querySelector("[data-reveal-name]");
+      const role = card.querySelector("[data-reveal-role]");
+      gsap.to(name, { opacity: 1, duration: 0.5, delay: 0.5, ease: "power2.out", scrollTrigger: { trigger: card, start: "top 82%" } });
+      gsap.to(role, {
+        opacity: 1,
+        duration: 0.5,
+        delay: 0.65,
+        ease: "power2.out",
+        scrollTrigger: { trigger: card, start: "top 82%" },
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>("[data-dept-line]").forEach((line) => {
+      gsap.to(line, {
+        scaleX: 1,
+        duration: 0.8,
+        ease: "power2.inOut",
+        scrollTrigger: { trigger: line, start: "top 90%" },
+      });
+    });
+  }
+
+  function init() {
+    initTeamTilt();
+    // Defer until page-transition cleanup finishes
+    requestAnimationFrame(initCommandCenterReveal);
+  }
+
+  document.addEventListener("astro:page-load", init);
+</script>

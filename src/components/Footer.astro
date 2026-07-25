@@ -1,0 +1,24 @@
+---
+import { site } from "../lib/content";
+---
+
+<footer class="border-t border-border bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="flex items-center gap-3">
+      <span
+        class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-primary/40 bg-background"
+        aria-hidden="true"
+      >
+        <img src="/brand/ocf10logo.png" alt="" class="h-full w-full object-cover" />
+      </span>
+      <div class="leading-tight">
+        <p class="font-display font-semibold text-foreground">Oakridge Codefest <span class="lowercase">{site.edition}</span></p>
+        <p class="font-mono text-xs text-muted-foreground">{site.tagline}</p>
+      </div>
+    </div>
+
+    <div class="mt-8 border-t border-border pt-6 font-mono text-xs text-muted-foreground">
+      <p>Oakridge Codefest 2027. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,112 @@
+---
+// Session preloader
+---
+
+<noscript>
+  <style>
+    #preloader {
+      display: none;
+    }
+  </style>
+</noscript>
+
+<div
+  id="preloader"
+  class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background"
+  aria-hidden="true"
+>
+  <div class="relative flex h-20 w-20 items-center justify-center">
+    <span class="absolute -inset-2 rounded-full bg-primary/20 blur-md animate-pulse-glow"></span>
+    <span class="relative h-full w-full overflow-hidden rounded-full border border-primary/40">
+      <img src="/brand/ocf10logo.png" alt="" class="h-full w-full object-cover" />
+    </span>
+  </div>
+  <p class="mt-6 font-mono text-xs uppercase tracking-[0.4em] text-muted-foreground">Descending</p>
+  <p id="preloader-depth" class="mt-2 font-mono text-3xl font-bold tabular-nums text-primary">0m</p>
+  <div class="mt-8 h-px w-48 overflow-hidden bg-white/10">
+    <div id="preloader-bar" class="h-full w-0 bg-primary"></div>
+  </div>
+  <button
+    id="preloader-skip"
+    type="button"
+    class="mt-10 font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground underline underline-offset-4 transition-colors hover:text-primary"
+  >
+    Skip
+  </button>
+</div>
+
+<script>
+  import { gsap } from "gsap";
+
+  const SESSION_KEY = "codefest-preloader-seen";
+  function announceDone() {
+    document.dispatchEvent(new CustomEvent("codefest:preloader-done"));
+  }
+
+  function run() {
+    const root = document.getElementById("preloader");
+    if (!root) {
+      announceDone();
+      return;
+    }
+
+    if (sessionStorage.getItem(SESSION_KEY)) {
+      root.remove();
+      announceDone();
+      return;
+    }
+    sessionStorage.setItem(SESSION_KEY, "1");
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const depthEl = document.getElementById("preloader-depth");
+    const bar = document.getElementById("preloader-bar");
+    const skipBtn = document.getElementById("preloader-skip");
+
+    if (reduced) {
+      gsap.to(root, {
+        opacity: 0,
+        duration: 0.3,
+        delay: 0.15,
+        onComplete: () => {
+          root.remove();
+          announceDone();
+        },
+      });
+      return;
+    }
+
+    const exit = () => {
+      gsap.to(root, {
+        yPercent: -100,
+        duration: 0.75,
+        ease: "power3.inOut",
+        onComplete: () => {
+          root.remove();
+          announceDone();
+        },
+      });
+    };
+    const depth = { meters: 0 };
+    const tl = gsap.timeline({ onComplete: exit });
+    tl.to(
+      depth,
+      {
+        meters: 650,
+        duration: 2.6,
+        ease: "power2.inOut",
+        onUpdate: () => {
+          if (depthEl) depthEl.textContent = `-${Math.round(depth.meters)}m`;
+        },
+      },
+      0,
+    )
+      .to(bar, { width: "100%", duration: 2.6, ease: "power2.inOut" }, 0)
+      .to({}, { duration: 0.4 });
+
+    const skip = () => tl.progress(1);
+    skipBtn?.addEventListener("click", skip);
+    window.addEventListener("keydown", skip, { once: true });
+  }
+
+  document.addEventListener("astro:page-load", run);
+</script>

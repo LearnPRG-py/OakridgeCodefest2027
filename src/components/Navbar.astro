@@ -1,0 +1,258 @@
+---
+import { Menu, X } from "@lucide/astro";
+import { navItems, site } from "../lib/content";
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+// Nav links
+const isActive = (href: string) => {
+  if (href === "/coming-soon") return false;
+  const normalizedHrefPath = href.replace(/\/$/, "") || "/";
+  return normalizedHrefPath === currentPath;
+};
+---
+
+<header id="site-navbar" class="fixed inset-x-0 top-0 z-50" data-navbar>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div
+      id="navbar-inner"
+      class="glass-pill mt-3 flex items-center justify-between overflow-hidden rounded-full px-3 py-2.5 transition-shadow duration-300 sm:mt-4 sm:px-4"
+      data-navbar-inner
+    >
+      <a
+        href="/"
+        id="nav-logo"
+        class="group flex shrink-0 items-center gap-2.5 rounded-full font-display text-lg font-semibold tracking-tight text-foreground"
+      >
+        <span id="nav-logo-icon" class="relative flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden="true">
+          <span class="absolute -inset-1.5 rounded-full bg-primary/25 blur-md motion-safe:animate-pulse-glow"></span>
+          <span class="relative h-full w-full overflow-hidden rounded-full border border-primary/40 bg-surface shadow-glow">
+            <img src="/brand/ocf10logo.png" alt="" class="h-full w-full object-cover" />
+          </span>
+        </span>
+        <span id="nav-logo-text" class="flex flex-col whitespace-nowrap leading-none">
+          <span>OAK CODEFEST 2027</span>
+          <span class="font-mono text-[0.55rem] font-normal lowercase tracking-[0.3em] text-muted-foreground"
+            >{site.edition}</span
+          >
+        </span>
+      </a>
+
+      <div id="nav-collapsible" class="flex shrink-0 items-center gap-1">
+        <ul class="hidden items-center gap-1 md:flex" id="nav-menu-desktop">
+          {
+            navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  class:list={[
+                    "relative whitespace-nowrap rounded-full px-4 py-2 font-mono text-sm transition-colors duration-200",
+                    item.label === "Register"
+                      ? "bg-primary text-on-primary font-semibold hover:bg-primary/90"
+                      : isActive(item.href)
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground",
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <button
+          type="button"
+          id="hamburger-btn"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-foreground md:hidden"
+          aria-expanded="false"
+          aria-controls="nav-menu-mobile"
+          aria-label="Toggle navigation menu"
+        >
+          <Menu class="h-5 w-5" id="icon-menu" aria-hidden="true" />
+          <X class="hidden h-5 w-5" id="icon-close" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+
+    <ul
+      id="nav-menu-mobile"
+      class="glass-pill mt-2 hidden flex-col gap-1 rounded-2xl p-3 md:hidden"
+    >
+      {
+        navItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              class:list={[
+                "block rounded-xl px-4 py-3 font-mono text-sm transition-colors",
+                item.label === "Register"
+                  ? "bg-primary text-on-primary font-semibold"
+                  : isActive(item.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+              ]}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</header>
+
+<script>
+  import { gsap } from "gsap";
+  let inner: HTMLElement | null = null;
+  let logoText: HTMLElement | null = null;
+  let logoIcon: HTMLElement | null = null;
+  let collapsible: HTMLElement | null = null;
+  let hamburgerBtn: HTMLElement | null = null;
+  let mobileMenu: HTMLElement | null = null;
+  let iconMenu: HTMLElement | null = null;
+  let iconClose: HTMLElement | null = null;
+
+  const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isCoarsePointer = () => window.matchMedia("(pointer: coarse)").matches;
+
+  let expandedWidth = 0;
+  let collapsedWidth = 0;
+  let naturalLeft = 0;
+  let docked = false;
+  let peeking = false;
+
+  function measure() {
+    if (!inner || !logoIcon) return;
+    const prevWidth = inner.style.width;
+    const prevTextOpacity = logoText?.style.opacity ?? "";
+    const prevCollapsibleOpacity = collapsible?.style.opacity ?? "";
+    const prevX = gsap.getProperty(inner, "x") as number;
+
+    gsap.set(inner, { x: 0 });
+    inner.style.width = "auto";
+    if (logoText) logoText.style.opacity = "1";
+    if (collapsible) collapsible.style.opacity = "1";
+    void inner.offsetWidth; // force reflow before measuring
+
+    expandedWidth = inner.getBoundingClientRect().width;
+    naturalLeft = inner.getBoundingClientRect().left;
+    const cs = getComputedStyle(inner);
+    collapsedWidth = logoIcon.getBoundingClientRect().width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+
+    inner.style.width = prevWidth;
+    if (logoText) logoText.style.opacity = prevTextOpacity;
+    if (collapsible) collapsible.style.opacity = prevCollapsibleOpacity;
+    gsap.set(inner, { x: prevX });
+  }
+  function collapsedOffsetX() {
+    const viewportCenter = window.innerWidth / 2;
+    const collapsedBoxCenter = naturalLeft + collapsedWidth / 2;
+    return viewportCenter - collapsedBoxCenter;
+  }
+
+  function applyState() {
+    if (!inner) return;
+    const collapsed = docked && !peeking;
+    const reduced = prefersReducedMotion();
+    const duration = reduced ? 0 : 0.55;
+
+    gsap.to(inner, {
+      width: collapsed ? collapsedWidth : expandedWidth,
+      x: collapsed ? collapsedOffsetX() : 0,
+      duration,
+      ease: "power3.inOut",
+      overwrite: "auto",
+    });
+    gsap.to([logoText, collapsible].filter(Boolean), {
+      opacity: collapsed ? 0 : 1,
+      scale: collapsed ? 0.92 : 1,
+      duration: reduced ? 0 : duration * 0.6,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+
+    if (collapsible) {
+      if (collapsed) collapsible.setAttribute("inert", "");
+      else collapsible.removeAttribute("inert");
+    }
+    inner.classList.toggle("shadow-[0_10px_36px_rgba(0,0,0,0.5)]", docked);
+  }
+  const onScroll = () => {
+    const next = window.scrollY > 40;
+    if (next !== docked) {
+      docked = next;
+      if (docked) setOpen(false);
+      applyState();
+    }
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  let resizeRaf = 0;
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      measure();
+      applyState();
+    });
+  });
+
+  let open = false;
+  const setOpen = (next: boolean) => {
+    open = next;
+    hamburgerBtn?.setAttribute("aria-expanded", String(open));
+    mobileMenu?.classList.toggle("hidden", !open);
+    mobileMenu?.classList.toggle("flex", open);
+    iconMenu?.classList.toggle("hidden", open);
+    iconClose?.classList.toggle("hidden", !open);
+  };
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && open) setOpen(false);
+  });
+  function bindElementListeners() {
+    if (!isCoarsePointer()) {
+      inner?.addEventListener("mouseenter", () => {
+        if (!docked) return;
+        peeking = true;
+        applyState();
+      });
+      inner?.addEventListener("mouseleave", () => {
+        if (!peeking) return;
+        peeking = false;
+        applyState();
+      });
+    }
+
+    hamburgerBtn?.addEventListener("click", () => setOpen(!open));
+    mobileMenu?.querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", () => setOpen(false)),
+    );
+  }
+
+  function queryElements() {
+    inner = document.getElementById("navbar-inner");
+    logoText = document.getElementById("nav-logo-text");
+    logoIcon = document.getElementById("nav-logo-icon");
+    collapsible = document.getElementById("nav-collapsible");
+    hamburgerBtn = document.getElementById("hamburger-btn");
+    mobileMenu = document.getElementById("nav-menu-mobile");
+    iconMenu = document.getElementById("icon-menu");
+    iconClose = document.getElementById("icon-close");
+  }
+
+  function init() {
+    queryElements();
+    docked = window.scrollY > 40;
+    peeking = false;
+    open = false;
+    bindElementListeners();
+    setOpen(false);
+    measure();
+    applyState();
+  }
+
+  document.addEventListener("astro:page-load", init);
+</script>

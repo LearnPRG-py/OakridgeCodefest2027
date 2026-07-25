@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import HudCorners from "../components/HudCorners.astro";
+---
+
+<BaseLayout
+  title="Oakridge Codefest 2027 | Coming Soon"
+  description="This section of Oakridge Codefest 2027 is still in the works. Check back soon."
+>
+  <!-- Coming soon terminal -->
+  <section class="relative flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center overflow-hidden px-4 py-32 text-center sm:px-6">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-grid-circuit [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black,transparent)]"></div>
+    <div
+      class="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
+      aria-hidden="true"
+    >
+    </div>
+    <HudCorners />
+
+    <!-- Iris scanner -->
+    <div class="relative mb-8 flex h-32 w-32 items-center justify-center sm:h-40 sm:w-40">
+      <div
+        class="absolute inset-0 rounded-full border border-primary/20 motion-safe:animate-[spin_9s_linear_infinite]"
+        style="background: conic-gradient(from 0deg, transparent 0%, rgba(46,230,214,0.35) 12%, transparent 24%);"
+        aria-hidden="true"
+      >
+      </div>
+      <div
+        class="absolute inset-3 rounded-full border border-primary/25 motion-safe:animate-[spin_6s_linear_infinite_reverse]"
+        aria-hidden="true"
+      >
+      </div>
+      <span
+        class="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-primary/40 bg-surface shadow-glow motion-safe:animate-pulse-glow"
+        aria-hidden="true"
+      >
+        <img src="/brand/ocf10logo.png" alt="" class="h-full w-full object-cover" />
+      </span>
+    </div>
+
+    <p class="mb-2 font-mono text-[0.65rem] uppercase tracking-[0.4em] text-destructive/80" data-reveal>
+      Access Level: Restricted
+    </p>
+    <p class="mb-3 font-mono text-xs uppercase tracking-[0.4em] text-primary" data-reveal>
+      Requesting Clearance
+    </p>
+    <h1 class="font-display text-3xl font-bold text-foreground sm:text-5xl" data-reveal>
+      Coming Soon
+    </h1>
+    <p class="mt-4 max-w-md text-balance text-muted-foreground sm:text-lg" data-reveal>
+      This part of Codefest v10 is still surfacing!
+    </p>
+
+    <div class="glass mt-8 w-full max-w-xs rounded-2xl p-4 text-left" data-reveal>
+      <div class="flex items-center justify-between font-mono text-[0.6rem] uppercase tracking-widest text-muted-foreground">
+        <span>System Status</span>
+        <span id="coming-soon-percent" class="text-primary">62%</span>
+      </div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div class="h-full w-[62%] rounded-full bg-primary motion-safe:animate-pulse-glow"></div>
+      </div>
+      <p class="mt-2 font-mono text-[0.6rem] text-muted-foreground/80">Fabricating systems&hellip;</p>
+    </div>
+
+    <div class="mt-10" data-reveal>
+      <Button href="/">Head Back Home</Button>
+    </div>
+  </section>
+</BaseLayout>

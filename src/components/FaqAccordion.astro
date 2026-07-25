@@ -1,0 +1,79 @@
+---
+import { ChevronDown } from "@lucide/astro";
+
+interface Props {
+  items: { question: string; answer: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<noscript>
+  <style>
+    [data-faq-panel] {
+      height: auto !important;
+    }
+  </style>
+</noscript>
+
+<div class="glass mx-auto max-w-3xl divide-y divide-white/10 rounded-3xl">
+  {
+    items.map((item, index) => (
+      <div class="px-5 sm:px-7" data-reveal data-faq-item>
+        <button
+          type="button"
+          class="flex w-full cursor-pointer list-none items-center justify-between gap-4 py-4 text-left font-display text-base font-medium text-foreground sm:text-lg"
+          aria-expanded="false"
+          aria-controls={`faq-panel-${index}`}
+          data-faq-trigger
+        >
+          <span class="flex items-baseline gap-3">
+            <span class="font-mono text-xs text-primary">{String(index + 1).padStart(2, "0")}</span>
+            <span>{item.question}</span>
+          </span>
+          <ChevronDown class="h-5 w-5 shrink-0 text-primary" aria-hidden="true" data-faq-chevron />
+        </button>
+        <div id={`faq-panel-${index}`} role="region" class="overflow-hidden" style="height: 0;" data-faq-panel>
+          <p class="pb-5 pl-9 pr-2 text-sm leading-relaxed text-muted-foreground sm:text-base">{item.answer}</p>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  import { gsap } from "gsap";
+
+  const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function initFaq() {
+    document.querySelectorAll<HTMLElement>("[data-faq-item]").forEach((item) => {
+      const trigger = item.querySelector<HTMLButtonElement>("[data-faq-trigger]");
+      const panel = item.querySelector<HTMLElement>("[data-faq-panel]");
+      const chevron = item.querySelector<HTMLElement>("[data-faq-chevron]");
+      if (!trigger || !panel || trigger.dataset.faqBound) return;
+      trigger.dataset.faqBound = "true";
+
+      trigger.addEventListener("click", () => {
+        const isOpen = trigger.getAttribute("aria-expanded") === "true";
+        trigger.setAttribute("aria-expanded", String(!isOpen));
+
+        const duration = prefersReducedMotion() ? 0 : 0.5;
+        gsap.to(panel, {
+          height: isOpen ? 0 : "auto",
+          duration,
+          ease: "power3.inOut",
+          overwrite: "auto",
+        });
+        gsap.to(chevron, {
+          rotate: isOpen ? 0 : 180,
+          duration: prefersReducedMotion() ? 0 : 0.4,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", initFaq);
+</script>

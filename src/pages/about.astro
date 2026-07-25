@@ -1,0 +1,224 @@
+---
+import { GraduationCap, Lightbulb, Trophy, Globe, Rocket } from "@lucide/astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import TerminalPanel from "../components/TerminalPanel.astro";
+import FaqAccordion from "../components/FaqAccordion.astro";
+import TeamRoster from "../components/TeamRoster.astro";
+import ContactSection from "../components/ContactSection.astro";
+import HudCorners from "../components/HudCorners.astro";
+import {
+  site,
+  missionVision,
+  whatIsCodefest,
+  benefits,
+  faqs,
+  ourTeam,
+  sponsor,
+  gallery,
+  aboutContactFields,
+} from "../lib/content";
+
+const iconMap = {
+  "graduation-cap": GraduationCap,
+  lightbulb: Lightbulb,
+  trophy: Trophy,
+  globe: Globe,
+  rocket: Rocket,
+} as const;
+
+const galleryRows = [
+  Array.from({ length: 5 }, (_, i) => i),
+  Array.from({ length: 5 }, (_, i) => i + 5),
+  Array.from({ length: 5 }, (_, i) => i + 10),
+];
+---
+
+<BaseLayout
+  title="Oakridge Codefest 2027 | About"
+  description="Mission, vision, FAQs, and the people behind Oakridge Codefest 2027: the 10th edition of India's biggest overnight high-school hackathon."
+>
+  <!-- Hero -->
+  <section class="relative overflow-hidden px-4 pb-16 pt-36 text-center sm:px-6">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-grid-circuit [mask-image:radial-gradient(ellipse_70%_70%_at_50%_0%,black,transparent)]"></div>
+    <HudCorners />
+
+    <p
+      class="mb-4 font-mono text-xs uppercase tracking-[0.4em] text-primary"
+      data-reveal
+    >
+      {site.edition} &middot; 2027 &middot; <span class="text-muted-foreground">Station Online</span>
+    </p>
+    <h1 class="font-display text-4xl font-bold text-foreground sm:text-6xl" data-reveal>Oakridge Codefest 2027</h1>
+    <p class="mt-3 font-mono text-lg text-primary sm:text-xl" data-reveal>{site.tagline}</p>
+
+    <div class="mt-12 flex items-center justify-center gap-4 sm:gap-6" data-reveal-group>
+      <img
+        src="/brand/bubble2.jpg"
+        alt=""
+        class="glass-glow h-20 w-20 rounded-full !border-2 !border-primary/30 object-cover sm:h-28 sm:w-28"
+      />
+      <span
+        class="glass-glow flex h-28 w-28 -translate-y-4 items-center justify-center overflow-hidden rounded-full bg-black !border-2 !border-primary/40 sm:h-40 sm:w-40"
+        aria-hidden="true"
+      >
+        <img src="/brand/ocf10logo.png" alt="" class="h-full w-full object-contain" />
+      </span>
+      <img
+        src="/brand/bubble3.jpg"
+        alt=""
+        class="glass-glow h-20 w-20 rounded-full !border-2 !border-primary/30 object-cover sm:h-28 sm:w-28"
+      />
+    </div>
+  </section>
+
+  <!-- Mission and vision -->
+  <section class="border-t border-border py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <SectionHeading title={missionVision.heading} align="center" class="mb-14" />
+      <div class="glass glass-glow grid grid-cols-1 gap-10 rounded-3xl p-6 sm:p-10 lg:grid-cols-5 lg:gap-12 lg:p-12">
+        <img
+          src="/brand/missionvision.jpg"
+          alt=""
+          class="aspect-[4/3] w-full rounded-2xl border border-border object-cover lg:order-last lg:col-span-2"
+        />
+        <div class="space-y-8 lg:col-span-3" data-reveal>
+          <div>
+            <h3 class="font-display text-2xl font-bold text-primary">{missionVision.mission.title}</h3>
+            <p class="mt-3 text-lg leading-relaxed text-foreground/85">{missionVision.mission.text}</p>
+          </div>
+          <div>
+            <h3 class="font-display text-2xl font-bold text-primary">{missionVision.vision.title}</h3>
+            <p class="mt-3 text-lg leading-relaxed text-foreground/85">{missionVision.vision.text}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What is Codefest -->
+  <section class="border-t border-border bg-surface/30 px-4 py-20 sm:px-6 sm:py-28">
+    <SectionHeading title={whatIsCodefest.heading} align="center" class="mb-14" />
+    <TerminalPanel title="python3 aboutcodefest.py" paragraphs={whatIsCodefest.paragraphs} />
+  </section>
+
+  <!-- Benefits -->
+  <section class="border-t border-border py-20 sm:py-28">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <SectionHeading title={benefits.heading} align="center" class="mb-14" />
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2" data-reveal-group>
+        {
+          benefits.items.map((b, i) => {
+            const Icon = iconMap[b.icon];
+            const isHero = i === 2;
+            return (
+              <div
+                data-tilt
+                class:list={[
+                  "glass relative overflow-hidden rounded-2xl p-6 transition-colors hover:border-primary/30",
+                  isHero ? "flex flex-col justify-center lg:col-span-2 lg:row-span-2 lg:p-10" : "lg:col-span-1",
+                ]}
+              >
+                {isHero && (
+                  <span class="pointer-events-none absolute -bottom-8 -right-4 select-none font-display text-[9rem] font-bold leading-none text-primary/10">
+                    ₹
+                  </span>
+                )}
+                <span
+                  class:list={[
+                    "relative mb-4 flex items-center justify-center rounded-xl bg-primary/10 text-primary",
+                    isHero ? "h-14 w-14" : "h-11 w-11",
+                  ]}
+                >
+                  <Icon class:list={[isHero ? "h-7 w-7" : "h-5 w-5"]} aria-hidden="true" />
+                </span>
+                <h3 class:list={["relative font-display font-bold text-foreground", isHero ? "text-3xl sm:text-4xl" : "text-lg"]}>
+                  {b.title}
+                </h3>
+                <p class:list={["relative mt-2 leading-relaxed text-muted-foreground", isHero ? "max-w-xs text-base sm:text-lg" : "text-sm"]}>
+                  {b.text}
+                </p>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section class="overflow-hidden border-t border-border py-20 sm:py-28">
+    <SectionHeading
+      eyebrow="Archive"
+      title={gallery.heading}
+      align="center"
+      class="mx-auto mb-14 px-4"
+    />
+    <div class="space-y-4">
+      {
+        galleryRows.map((row, rowIndex) => (
+          <div class="flex gap-4 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+            <div
+              class:list={[
+                "flex shrink-0 gap-4 motion-safe:animate-marquee",
+                rowIndex % 2 === 1 && "[animation-direction:reverse]",
+              ]}
+            >
+              {[...row, ...row].map((i) => (
+                <div class="relative h-40 w-64 shrink-0 overflow-hidden rounded-lg border-4 border-surface-2 bg-black shadow-[0_0_0_1px_rgba(255,255,255,0.06)] sm:h-48 sm:w-80">
+                  <img src={`/gallery/image-${i + 1}.png`} alt="" class="h-full w-full object-cover" />
+                  <div class="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(0,0,0,0.25)_0px,rgba(0,0,0,0.25)_1px,transparent_2px,transparent_4px)]" />
+                  <div class="pointer-events-none absolute inset-0 shadow-[inset_0_0_30px_20px_rgba(0,0,0,0.6)]" />
+                  <span class="absolute right-2 top-2 flex items-center gap-1 font-mono text-[0.55rem] uppercase tracking-widest text-destructive/80">
+                    <span class="h-1.5 w-1.5 rounded-full bg-destructive/80" /> rec
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Our team -->
+  <section class="relative overflow-hidden border-t border-border py-20 sm:py-28">
+    <div class="mx-auto max-w-6xl">
+      <TeamRoster
+        heading={ourTeam.heading}
+        noteTitle={ourTeam.noteTitle}
+        noteText={ourTeam.noteText}
+        coreTeam={ourTeam.coreTeam}
+        leadership={ourTeam.leadership}
+        departments={ourTeam.departments}
+      />
+    </div>
+  </section>
+
+  <!-- Sponsor -->
+  <section class="border-t border-border bg-surface/30 px-4 py-20 sm:px-6 sm:py-28">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="font-display text-2xl font-semibold text-foreground sm:text-3xl" data-reveal>{sponsor.heading}</h2>
+
+      <div class="glass mx-auto mt-8 flex h-24 w-56 items-center justify-center gap-3 rounded-2xl" data-reveal>
+        <span class="relative flex h-5 w-5 shrink-0" aria-hidden="true">
+          <span class="absolute inset-0 rounded-full border-2 border-primary/25"></span>
+          <span class="absolute inset-0 rounded-full border-2 border-transparent border-t-primary motion-safe:animate-[spin_1.4s_linear_infinite]"></span>
+        </span>
+        <span class="font-mono text-xs uppercase tracking-widest text-muted-foreground">{sponsor.noteTitle}</span>
+      </div>
+
+      <div class="glass mx-auto mt-10 max-w-2xl rounded-2xl p-6" data-reveal>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{sponsor.noteText}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-border bg-surface/30 px-4 py-20 sm:px-6 sm:py-28">
+    <SectionHeading eyebrow="Support" title="Frequently Asked Questions" align="center" class="mb-14" />
+    <FaqAccordion items={faqs} />
+  </section>
+
+  <ContactSection cardTitle="Codefest27.contact" fields={aboutContactFields} />
+</BaseLayout>

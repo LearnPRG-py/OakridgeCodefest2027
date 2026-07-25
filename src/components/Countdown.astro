@@ -1,0 +1,77 @@
+---
+interface Props {
+  targetISO: string;
+  label: string;
+}
+
+const { targetISO, label } = Astro.props;
+const units = [
+  { id: "days", short: "Days" },
+  { id: "hours", short: "Hours" },
+  { id: "minutes", short: "Minutes" },
+  { id: "seconds", short: "Seconds" },
+];
+---
+
+<div
+  class="glass glass-glow inline-flex divide-x divide-white/10 rounded-2xl"
+  data-countdown
+  data-target={targetISO}
+  role="group"
+  aria-label={label}
+>
+  {
+    units.map((u) => (
+      <div class="flex w-[4.6rem] flex-col items-center px-2 py-5 sm:w-24 sm:py-6">
+        <span
+          class="font-display text-4xl font-bold tabular-nums leading-none text-foreground sm:text-5xl"
+          data-unit={u.id}
+          aria-hidden="true"
+        >
+          00
+        </span>
+        <small class="mt-2.5 font-mono text-[0.6rem] uppercase tracking-[0.25em] text-primary">
+          {u.short}
+        </small>
+      </div>
+    ))
+  }
+  <span class="sr-only">{label}</span>
+</div>
+
+<script>
+  function pad(n: number) {
+    return String(Math.max(0, n)).padStart(2, "0");
+  }
+
+  function tick(root: HTMLElement) {
+    const target = new Date(root.dataset.target ?? "").getTime();
+
+    const update = () => {
+      const diff = target - Date.now();
+      const days = Math.floor(diff / 86_400_000);
+      const hours = Math.floor((diff % 86_400_000) / 3_600_000);
+      const minutes = Math.floor((diff % 3_600_000) / 60_000);
+      const seconds = Math.floor((diff % 60_000) / 1000);
+
+      const values: Record<string, number> = { days, hours, minutes, seconds };
+      for (const [unit, value] of Object.entries(values)) {
+        const el = root.querySelector<HTMLElement>(`[data-unit="${unit}"]`);
+        if (el) el.textContent = pad(diff > 0 ? value : 0);
+      }
+    };
+
+    update();
+    return setInterval(update, 1000);
+  }
+
+  function initAll() {
+    document.querySelectorAll<HTMLElement>("[data-countdown]").forEach((root) => {
+      if (root.dataset.countdownBound) return;
+      root.dataset.countdownBound = "true";
+      tick(root);
+    });
+  }
+
+  document.addEventListener("astro:page-load", initAll);
+</script>

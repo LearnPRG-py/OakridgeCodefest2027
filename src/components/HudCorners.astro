@@ -1,0 +1,23 @@
+---
+// HUD corners
+interface Props {
+  class?: string;
+  inset?: string;
+}
+
+const { class: className = "", inset = "inset-4 sm:inset-8" } = Astro.props;
+const corners = [
+  "top-0 left-0 border-l border-t",
+  "top-0 right-0 border-r border-t",
+  "bottom-0 left-0 border-l border-b",
+  "bottom-0 right-0 border-r border-b",
+] as const;
+---
+
+<div class:list={["pointer-events-none absolute", inset, className]} aria-hidden="true">
+  {
+    corners.map((pos) => (
+      <span class:list={["absolute h-6 w-6 border-primary/50 sm:h-8 sm:w-8", pos]} />
+    ))
+  }
+</div>
