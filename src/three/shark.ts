@@ -1,6 +1,12 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-// Procedural shark
+// Shark model
+const MODEL_URL = "/models/shark.glb";
+
+// Model bounds
+const NOSE_Z = 0.494;
+const TAIL_Z = -0.493;
 
 const FRESNEL_FRAG = `
   varying vec3 vNormal;
@@ -20,160 +26,164 @@ const FRESNEL_FRAG = `
   }
 `;
 
-const BODY_VERT = `
+// Swim deformation
+const SWIM_VERT = `
   uniform float u_time;
   uniform float u_swimSpeed;
   uniform float u_swimAmount;
-  uniform float u_headY;
-  uniform float u_tailY;
+  uniform float u_waveFreq;
+  uniform float u_noseZ;
+  uniform float u_tailZ;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
 
   void main() {
     vec3 pos = position;
-    float taper = clamp((u_headY - pos.y) / (u_headY - u_tailY), 0.0, 1.0);
+
+    float taper = clamp((u_noseZ - pos.z) / (u_noseZ - u_tailZ), 0.0, 1.0);
     taper = taper * taper;
-    float wiggle = sin(pos.y * 0.9 - u_time * u_swimSpeed) * u_swimAmount * taper;
-    pos.x += wiggle;
+
+    float phase = pos.z * u_waveFreq + u_time * u_swimSpeed;
+    float wave = sin(phase) * u_swimAmount * taper;
+    pos.x += wave;
+
+    // Normal wave slope
+    float slope = cos(phase) * u_waveFreq * u_swimAmount * taper;
+    vec3 n = normalize(normal + vec3(-slope, 0.0, 0.0) * 0.6);
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     vViewPosition = -mvPosition.xyz;
-    vNormal = normalMatrix * normal;
+    vNormal = normalMatrix * n;
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
-const STATIC_VERT = `
-  varying vec3 vNormal;
-  varying vec3 vViewPosition;
+export interface Shark {
+  group: THREE.Group;
+  material: THREE.ShaderMaterial;
+  ready: Promise<void>;
+  loaded: boolean;
+  
+  headUpPitch: number;
+  update(elapsed: number, dt: number): void;
+  steer(direction: THREE.Vector3, dt: number): void;
+}
 
-  void main() {
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewPosition = -mvPosition.xyz;
-    vNormal = normalMatrix * normal;
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
+const UP = new THREE.Vector3(0, 1, 0);
+const ORIGIN = new THREE.Vector3();
 
-function makeMaterial(vertexShader: string, extraUniforms: Record<string, THREE.IUniform> = {}) {
-  return new THREE.ShaderMaterial({
-    vertexShader,
+export function createShark(): Shark {
+  const group = new THREE.Group();
+  // Steering groups
+  const steerGroup = new THREE.Group();
+  group.add(steerGroup);
+  // Orientation fix
+  const bodyGroup = new THREE.Group();
+  bodyGroup.rotation.y = Math.PI;
+  steerGroup.add(bodyGroup);
+
+  const material = new THREE.ShaderMaterial({
+    vertexShader: SWIM_VERT,
     fragmentShader: FRESNEL_FRAG,
     uniforms: {
       u_time: { value: 0 },
       u_baseColor: { value: new THREE.Color("#03211d") },
       u_glowColor: { value: new THREE.Color("#2ee6d6") },
       u_reveal: { value: 1 },
-      ...extraUniforms,
+      u_swimSpeed: { value: 2.4 },
+      u_swimAmount: { value: 0.055 },
+      u_waveFreq: { value: 7.0 },
+      u_noseZ: { value: NOSE_Z },
+      u_tailZ: { value: TAIL_Z },
     },
   });
-}
 
-function finShape(points: [number, number][]): THREE.Shape {
-  const shape = new THREE.Shape();
-  shape.moveTo(points[0][0], points[0][1]);
-  for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], points[i][1]);
-  shape.closePath();
-  return shape;
-}
+  const shark: Shark = {
+    group,
+    material,
+    loaded: false,
+    ready: Promise.resolve(),
+    headUpPitch: 1.02,
+    update() {},
+    steer() {},
+  };
 
-const HEAD_Y = 2.85;
-const TAIL_Y = -3.2;
-
-export interface Shark {
-  group: THREE.Group;
-  bodyMaterial: THREE.ShaderMaterial;
-  finMaterial: THREE.ShaderMaterial;
-  tailFin: THREE.Mesh;
-  update(elapsed: number): void;
-}
-
-export function createShark(): Shark {
-  const group = new THREE.Group();
-  const model = new THREE.Group();
-  group.add(model);
-  model.rotation.z = Math.PI / 2;
-
-  // Body
-  const profile = [
-    new THREE.Vector2(0.0, TAIL_Y),
-    new THREE.Vector2(0.14, -2.95),
-    new THREE.Vector2(0.34, -2.3),
-    new THREE.Vector2(0.52, -1.3),
-    new THREE.Vector2(0.6, -0.3),
-    new THREE.Vector2(0.56, 0.7),
-    new THREE.Vector2(0.4, 1.7),
-    new THREE.Vector2(0.2, 2.35),
-    new THREE.Vector2(0.05, 2.72),
-    new THREE.Vector2(0.0, HEAD_Y),
-  ];
-  const bodyGeometry = new THREE.LatheGeometry(profile, 20);
-  const bodyMaterial = makeMaterial(BODY_VERT, {
-    u_swimSpeed: { value: 2.1 },
-    u_swimAmount: { value: 0.16 },
-    u_headY: { value: HEAD_Y },
-    u_tailY: { value: TAIL_Y },
+  shark.ready = new Promise<void>((resolve) => {
+    new GLTFLoader().load(
+      MODEL_URL,
+      (gltf) => {
+        let mesh: THREE.Mesh | null = null;
+        gltf.scene.traverse((obj) => {
+          if (!mesh && (obj as THREE.Mesh).isMesh) mesh = obj as THREE.Mesh;
+        });
+        if (mesh) {
+          const found = mesh as THREE.Mesh;
+          gltf.scene.updateWorldMatrix(true, true);
+          const geometry = found.geometry.clone();
+          geometry.applyMatrix4(found.matrixWorld);
+          geometry.computeBoundingBox();
+          bodyGroup.add(new THREE.Mesh(geometry, material));
+          shark.loaded = true;
+        }
+        resolve();
+      },
+      undefined,
+      () => resolve(),
+    );
   });
-  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-  model.add(body);
 
-  const finMaterial = makeMaterial(STATIC_VERT);
+  // Steering state
+  const heading = new THREE.Vector3(0, 0, -1);
+  const desired = new THREE.Vector3();
+  const lookMatrix = new THREE.Matrix4();
+  const targetQuat = new THREE.Quaternion();
+  const bankQuat = new THREE.Quaternion();
+  const forwardAxis = new THREE.Vector3(0, 0, -1);
+  let prevYaw = 0;
+  let bank = 0;
 
-  // Dorsal fin
-  const dorsalShape = finShape([
-    [0, 0],
-    [0.05, 0.75],
-    [0.55, 0.35],
-    [0.5, 0],
-  ]);
-  const dorsalGeo = new THREE.ExtrudeGeometry(dorsalShape, { depth: 0.04, bevelEnabled: false });
-  const dorsalFin = new THREE.Mesh(dorsalGeo, finMaterial);
-  dorsalFin.position.set(-0.02, 0.3, 0);
-  dorsalFin.rotation.y = Math.PI / 2;
-  dorsalFin.rotation.z = -0.15;
-  model.add(dorsalFin);
+  const horiz = new THREE.Vector3();
 
-  // Pectoral fins
-  const pecShape = finShape([
-    [0, 0],
-    [-0.15, -0.55],
-    [0.55, -0.4],
-    [0.45, 0],
-  ]);
-  const pecGeoL = new THREE.ExtrudeGeometry(pecShape, { depth: 0.04, bevelEnabled: false });
-  const pecFinL = new THREE.Mesh(pecGeoL, finMaterial);
-  pecFinL.position.set(0.5, -0.5, 0);
-  pecFinL.rotation.y = 0.5;
-  pecFinL.rotation.z = 0.35;
-  model.add(pecFinL);
+  shark.steer = (direction: THREE.Vector3, dt: number) => {
+    if (direction.lengthSq() < 1e-8) return;
 
-  const pecFinR = pecFinL.clone();
-  pecFinR.position.x = -0.5;
-  pecFinR.rotation.y = Math.PI - 0.5;
-  pecFinR.rotation.z = 0.35;
-  model.add(pecFinR);
+    // Head-up steering
+    horiz.set(direction.x, 0, direction.z);
+    if (horiz.lengthSq() < 1e-8) horiz.set(0, 0, -1);
+    horiz.normalize();
+    const pitch = shark.headUpPitch;
+    desired.set(horiz.x * Math.cos(pitch), Math.sin(pitch), horiz.z * Math.cos(pitch)).normalize();
 
-  // Tail fin
-  const tailShape = finShape([
-    [0, 0],
-    [0.75, 0.55],
-    [0.15, 0.05],
-    [0.7, -0.6],
-  ]);
-  const tailGeo = new THREE.ExtrudeGeometry(tailShape, { depth: 0.04, bevelEnabled: false });
-  const tailFin = new THREE.Mesh(tailGeo, finMaterial);
-  tailFin.position.set(-0.08, 0, 0);
-  tailFin.rotation.y = Math.PI / 2;
-  const tailPivot = new THREE.Group();
-  tailPivot.position.set(0, TAIL_Y - 0.1, 0);
-  tailPivot.add(tailFin);
-  model.add(tailPivot);
+    // Smooth turn
+    const k = 1 - Math.exp(-dt * 2.6);
+    heading.lerp(desired, k);
+    if (heading.lengthSq() < 1e-8) return;
+    heading.normalize();
 
-  function update(elapsed: number) {
-    bodyMaterial.uniforms.u_time.value = elapsed;
-    finMaterial.uniforms.u_time.value = elapsed;
-    tailPivot.rotation.y = Math.sin(elapsed * 2.1) * 0.35;
-  }
+    lookMatrix.lookAt(ORIGIN, heading, UP);
+    targetQuat.setFromRotationMatrix(lookMatrix);
 
-  return { group, bodyMaterial, finMaterial, tailFin, update };
+    // Bank roll
+    const yaw = Math.atan2(heading.x, heading.z);
+    let dYaw = yaw - prevYaw;
+    if (dYaw > Math.PI) dYaw -= Math.PI * 2;
+    if (dYaw < -Math.PI) dYaw += Math.PI * 2;
+    prevYaw = yaw;
+    const targetBank = THREE.MathUtils.clamp((dYaw / Math.max(dt, 1e-4)) * 0.45, -0.7, 0.7);
+    bank += (targetBank - bank) * (1 - Math.exp(-dt * 3.2));
+
+    bankQuat.setFromAxisAngle(forwardAxis, bank);
+    targetQuat.multiply(bankQuat);
+    steerGroup.quaternion.copy(targetQuat);
+  };
+
+  shark.update = (elapsed: number) => {
+    material.uniforms.u_time.value = elapsed;
+    // Idle motion
+    bodyGroup.rotation.z = Math.sin(elapsed * 0.55) * 0.07;
+    bodyGroup.rotation.x = Math.sin(elapsed * 0.42 + 1.1) * 0.045;
+    bodyGroup.position.y = Math.sin(elapsed * 0.7) * 0.035;
+  };
+
+  return shark;
 }

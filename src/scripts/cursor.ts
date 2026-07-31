@@ -2,8 +2,8 @@ import { gsap } from "gsap";
 
 // Custom cursor
 
-let xTo: gsap.QuickToFunc | null = null;
-let yTo: gsap.QuickToFunc | null = null;
+let xSet: ((value: number) => void) | null = null;
+let ySet: ((value: number) => void) | null = null;
 let bound = false;
 
 function isEligible(): boolean {
@@ -13,8 +13,8 @@ function isEligible(): boolean {
 }
 
 const onPointerMove = (e: PointerEvent) => {
-  xTo?.(e.clientX);
-  yTo?.(e.clientY);
+  xSet?.(e.clientX);
+  ySet?.(e.clientY);
 };
 
 const onOver = (e: MouseEvent) => {
@@ -39,8 +39,8 @@ function init() {
   if (!cursor || !isEligible()) return;
 
   gsap.set(cursor, { xPercent: -50, yPercent: -50 });
-  xTo = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
-  yTo = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+  xSet = gsap.quickSetter(cursor, "x", "px") as (value: number) => void;
+  ySet = gsap.quickSetter(cursor, "y", "px") as (value: number) => void;
 
   cursor.classList.remove("hidden");
   cursor.classList.add("cursor-active");
