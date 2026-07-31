@@ -5,6 +5,15 @@ import Lenis from "lenis";
 gsap.registerPlugin(ScrollTrigger);
 
 let lenis: Lenis | null = null;
+let tickerBound = false;
+
+const MOTION_TRIGGER_ID_PREFIX = "motion:";
+
+function killMotionTriggers() {
+  ScrollTrigger.getAll().forEach((trigger) => {
+    if (trigger.vars.id?.startsWith(MOTION_TRIGGER_ID_PREFIX)) trigger.kill();
+  });
+}
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -16,10 +25,15 @@ function initLenis() {
   lenis = new Lenis({ duration: 1.05, smoothWheel: true });
   lenis.on("scroll", ScrollTrigger.update);
 
-  gsap.ticker.add((time) => {
-    lenis?.raf(time * 1000);
-  });
+  if (!tickerBound) {
+    gsap.ticker.add(tickLenis);
+    tickerBound = true;
+  }
   gsap.ticker.lagSmoothing(0);
+}
+
+function tickLenis(time: number) {
+  lenis?.raf(time * 1000);
 }
 
 function destroyLenis() {
@@ -40,6 +54,7 @@ function initReveals() {
       duration: 0.5,
       ease: "power2.out",
       scrollTrigger: {
+        id: `${MOTION_TRIGGER_ID_PREFIX}reveal`,
         trigger: el,
         start: "top 88%",
         toggleActions: "play none none reverse",
@@ -55,6 +70,7 @@ function initReveals() {
       stagger: 0.08,
       ease: "power2.out",
       scrollTrigger: {
+        id: `${MOTION_TRIGGER_ID_PREFIX}reveal-group`,
         trigger: group,
         start: "top 85%",
       },
@@ -117,6 +133,7 @@ function initPodiumRise() {
       stagger: 0.15,
       ease: "power3.out",
       scrollTrigger: {
+        id: `${MOTION_TRIGGER_ID_PREFIX}podium`,
         trigger: group,
         start: "top 80%",
         toggleActions: "play none none reverse",
@@ -133,6 +150,7 @@ function initDepthOverlay() {
     opacity: 0.9,
     ease: "none",
     scrollTrigger: {
+      id: `${MOTION_TRIGGER_ID_PREFIX}depth-overlay`,
       trigger: document.body,
       start: "top top",
       end: "bottom bottom",
@@ -142,7 +160,8 @@ function initDepthOverlay() {
 }
 
 function init() {
-  ScrollTrigger.getAll().forEach((t) => t.kill());
+  killMotionTriggers();
+  destroyLenis();
   initLenis();
   initReveals();
   initMagnetic();
